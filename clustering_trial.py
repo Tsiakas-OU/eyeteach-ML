@@ -1,4 +1,5 @@
 import pandas as pd
+from explanations.LLM_explanations import generate_cluster_explanations
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
@@ -57,4 +58,8 @@ print("\n=== CLUSTER PROFILES ===")
 cluster_profiles = df_clean.groupby('cluster')[features].mean().round(2)
 print("Mean feature values by cluster:")
 print(cluster_profiles)
+
+## get LLM-based explanations
+#explanations =  generate_cluster_explanations(cluster_profiles)
+
 

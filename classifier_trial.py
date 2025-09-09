@@ -28,7 +28,7 @@ def recode_accuracy(x):
     elif x == 3:
         return 'High'        # Class 3 kept
     elif x == 4:
-        return 'Very_High'   # Class 4 kept
+        return 'Perfect'   # Class 4 kept
 
 df['ACCURACY_CLASS'] = df['ACCURACY'].apply(recode_accuracy)
 print(df['ACCURACY_CLASS'].value_counts())
@@ -109,5 +109,3 @@ for i, test_participant in enumerate(participants):
     })
     
     print(f"  Test samples: {len(X_test)}, Accuracy: {participant_accuracy:.3f}")
-    #for p, a in zip(y_pred, y_test.values):
-    #    print(f"    prediction: {p} - actual: {a}")
