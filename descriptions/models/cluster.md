@@ -1,7 +1,7 @@
 # clustering reading comprehension data
 
 ## tasks
-1. cluster trial data - [code](../../clustering_trial.py):  
+1. cluster trial data - [code](../../clustering_trial_meco.py):  
     - input (features):
         - 'nblink'
         - 'nrun'

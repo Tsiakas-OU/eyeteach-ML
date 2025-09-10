@@ -1,7 +1,7 @@
 # predict reading comprehension
 
 ## tasks
-1. predict reading comprehension for a single participant's trials - [code](../../classifier_trial.py): 
+1. predict reading comprehension for a single participant's trials - [code](../../classifier_trial_meco.py): 
 - input (features): 
     - `nblink`
     - `nrun`

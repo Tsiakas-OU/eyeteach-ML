@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Study Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7ff;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+        
+        @media (min-width: 900px) {
+            .container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eaeaea;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .data-highlights {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .highlight {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        
+        .highlight .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2575fc;
+            margin-bottom: 5px;
+        }
+        
+        .highlight .label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .analysis {
+            line-height: 1.8;
+            margin-top: 15px;
+        }
+        
+        .analysis h3 {
+            color: #2c3e50;
+            margin: 20px 0 10px;
+        }
+        
+        .analysis p {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #2575fc;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .key-findings {
+            grid-column: 1 / -1;
+        }
+        
+        .key-findings ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .key-findings li {
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            background: #e8f4fc;
+            border-radius: 6px;
+            border-left: 4px solid #2575fc;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Reading Study Analysis</h1>
+        <p class="subtitle">Visualizing eye-tracking data from a reading comprehension study with three distinct reader profiles</p>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <h2>Group 1: Efficient, Fluent Readers</h2>
+            <div class="data-highlights">
+                <div class="highlight">
+                    <div class="value">354</div>
+                    <div class="label">Words per Minute</div>
+                </div>
+                <div class="highlight">
+                    <div class="value">3.18/4</div>
+                    <div class="label">Comprehension Score</div>
+                </div>
+                <div class="highlight">
+                    <div class="value">29.4s</div>
+                    <div class="label">Total Reading Time</div>
+                </div>
+                <div class="highlight">
+                    <div class="value">4.8s</div>
+                    <div class="label">Rereading Time</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="cluster1Chart"></canvas>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Group 2: Medium-Paced Re-Readers</h2>
+            <div class="data-highlights">
+                <div class="highlight">
+                    <div class="value">243</div>
+                    <div class="label">Words per Minute</div>
+                </div>
+                <div class="highlight">
+                    <div class="value">3.13/4</div>
+                    <div class="label">Comprehension Score</div>
+                </div>
+                <div class="highlight">
+                    <div class="value">44.3s</div>
+                    <div class="label">Total Reading Time</div>
+                </div>
+                <div class="highlight">
+                    <div class="value">10.9s</div>
+                    <div class="label">Rereading Time</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="cluster0Chart"></canvas>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Group 3: Slow, Thorough Readers</h2>
+            <div class="data-highlights">
+                <div class="highlight">
+                    <div class="value">166</div>
+                    <div class="label">Words per Minute</div>
+                </div>
+                <div class="highlight">
+                    <div class="value">3.10/4</div>
+                    <div class="label">Comprehension Score</div>
+                </div>
+                <div class="highlight">
+                    <div class="value">67.3s</div>
+                    <div class="label">Total Reading Time</div>
+                </div>
+                <div class="highlight">
+                    <div class="value">23.9s</div>
+                    <div class="label">Rereading Time</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="cluster2Chart"></canvas>
+            </div>
+        </div>
+        
+        <div class="card key-findings">
+            <h2>Key Findings</h2>
+            <div class="analysis">
+                <h3>Reading Patterns</h3>
+                <p>Group 1 reads quickly and smoothly, with minimal rereading. Group 2 reads at a medium pace but frequently goes back to reread sections. Group 3 reads slowly and spends significant time rereading previous text.</p>
+                
+                <h3>Comprehension Outcomes</h3>
+                <p>All three groups achieved similar, high comprehension scores, showing that different reading styles can lead to the same successful understanding.</p>
+                
+                <h3>Overall Insights</h3>
+                <p>Reading quickly does not mean worse comprehension, and reading slowly does not mean better comprehension. The most efficient readers (Group 1) achieved high comprehension in the shortest time.</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Eye-Tracking Reading Comprehension Study Analysis | Data Visualization</p>
+    </footer>
+
+    <script>
+        // Data for charts
+        const data = {
+            labels: ['Reading Speed (words/min)', 'Comprehension Score (/4)', 'Total Time (seconds)', 'Rereading Time (seconds)', 'Eye Pauses', 'Blinks'],
+            datasets: [
+                {
+                    label: 'Efficient Readers',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                    data: [354, 3.18, 29.4, 4.8, 154, 7.4]
+                },
+                {
+                    label: 'Medium-Paced Readers',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                    data: [243, 3.13, 44.3, 10.9, 207, 9.0]
+                },
+                {
+                    label: 'Slow Readers',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                    data: [166, 3.10, 67.3, 23.9, 295, 11.4]
+                }
+            ]
+        };
+        
+        // Chart configuration
+        const config = {
+            type: 'radar',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 400
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Reading Metrics Comparison'
+                    }
+                }
+            }
+        };
+        
+        // Create charts
+        window.onload = function() {
+            const ctx0 = document.getElementById('cluster0Chart').getContext('2d');
+            const ctx1 = document.getElementById('cluster1Chart').getContext('2d');
+            const ctx2 = document.getElementById('cluster2Chart').getContext('2d');
+            
+            new Chart(ctx0, config);
+            new Chart(ctx1, config);
+            new Chart(ctx2, config);
+        };
+    </script>
+</body>
+</html>

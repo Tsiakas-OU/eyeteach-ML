@@ -1,9 +1,12 @@
 # generate explanations for models and predictions
 
 ## tasks
-1. generate clustering summary - [code](../../clustering_trial.py):  
+1. generate LLM-based clustering summary - [code](../../explanations/LLM_explanations.py):  
     - input: cluster summary (mean feature values per cluster)
     - output: summary report for clustering
+
+**Example:** 
+*We can see three clear patterns in how students read. One group reads at a medium pace but goes back to reread sections quite often. Another group reads very quickly and smoothly, rarely going back over text they have already read. The final group reads very slowly and spends a significant amount of time rereading previous words and sentences. Despite these very different approaches to reading, all three groups showed very similar and high levels of understanding on the comprehension questions afterward. The main difference between the groups is the speed and effort spent reading, not the final level of understanding they achieved.*
 
 2. generate local explanations 
     - input: 
