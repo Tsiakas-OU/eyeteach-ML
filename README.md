@@ -1,5 +1,14 @@
 # [EYE-TEACH] Machine Learning models
-development of ML models using eye-tracking data for reading comprehension tasks
+![Static Badge](https://img.shields.io/badge/status-work_in_progress-orange) 
+
+**🚧 Under Active Development | Draft Version | Pre-Release** 
+
+Development of ML models using eye-tracking data for reading comprehension tasks 
+
+## Attribution
+For the purpose of the EYE-TEACH project, we sourced existing datasets and codes from:
+- [MECO-L1](https://osf.io/3527a/), under the [CC-By Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) license 
+- [WebQAmGaze](https://github.com/tfnribeiro/WebQAmGaze), under the [CC-By Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) license  
 
 ## Installation
 - requirements - see `requirements.txt` or `environment.yml`
@@ -15,24 +24,22 @@ development of ML models using eye-tracking data for reading comprehension tasks
 - `classifier_trial_meco.py`: classification of comprehension accuracy - MECO passage level
 - `clustering_trial_meco.py`: clustering of eye-tracking features and comprehension data - MECO passage level
 
-## Data Used
-For the purpose of the EYE-TEACH project, we use existing datasets for eye-tracking.
-- For MECO-L1, we got the data and code from: https://osf.io/3527a/ 
-- For WebQAmGaze, we got the (pre_processed_) data and code from: https://github.com/tfnribeiro/WebQAmGaze
-
 ## Training datasets
 Based on the existing datasets mentioned above, for this project we use: 
-- `MECO-en_uk-passage.csv`: MECO-L1 passage data for English (UK). It includes ET features and reading comprehension scores [0-4] for each passage/trial [1-12] - [see more](descriptions/data/mecoL1.md)
+- `MECO-en_uk-passage.csv`: MECO-L1 passage data for English (UK). It includes ET features and reading comprehension scores [0-4] for each trial [1-12] - [see more](descriptions/data/mecoL1.md)
 - `MECO-en_uk-fix_uk01.csv`: MECO-L1 fixation report for a single participant
 - `MECO-en_uk-comp.csv`: MECO-L1 reading comprehension scores [0-4] for each passage/trial [1-12]
 - `webq-nr.csv`: Data from WebQAmGaze - used code from https://github.com/tfnribeiro/WebQAmGaze to get the csv data from the pre_processed_data folder
 
-## Methods ()
-- plot saccades for a single participant's trial - (`visualizations\saccade_plot_meco.py`)
-- SHAP - global and local explanations (`explanations\shap_explanations.py`)
-- LLM - communicate model parameters and explanations (`explanations\LLM_explanations.py`)
+## Methods - Visualizations and Explanations
+- plot saccades path for a single participant's trial - MECO L1 - (`visualizations\saccade_plot_meco.py`)
+- plot fixation path for a single participant's trial - MECO L1 - (`visualizations\saccade_plot_meco.py`)
+- (Draft) visualization of LLM-based cluster analysis - open `visualizations\cluster_analysis_example.html`
+- SHAP explanations - global and local explanations based on SHAP values (`explanations\shap_explanations.py`)
+- LLM feedback - communicate model parameters and explanations (`explanations\LLM_explanations.py`)
     - provide a descriptive summary of clustering (`explanations\generate_cluster_explanations`)
-    - provide global/local explanations based on SHAP
+    - provide global/local explanations based on SHAP explanations 
+
 
 ## Usage and Tasks
 ### Tasks
