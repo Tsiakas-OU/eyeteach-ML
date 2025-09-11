@@ -24,15 +24,6 @@ For the purpose of the EYE-TEACH project, we sourced existing datasets and codes
 - `classifier_trial_meco.py`: classification of comprehension accuracy - MECO passage level
 - `clustering_trial_meco.py`: clustering of eye-tracking features and comprehension data - MECO passage level
 
-<<<<<<< HEAD
-=======
-## Attribution
-For the purpose of the EYE-TEACH project, we sourced existing datasets and codes from:
-- [MECO-L1](https://osf.io/3527a/), licensed under [CC-By Attribution 4.0 International],
-- [WebQAmGaze](https://github.com/tfnribeiro/WebQAmGaze), licensed under [CC-By Attribution 4.0 International],
-- ...
-
->>>>>>> 708358da67863d5ee905ad942449b248754b4c05
 ## Training datasets
 Based on the existing datasets mentioned above, for this project we use: 
 - `MECO-en_uk-passage.csv`: MECO-L1 passage data for English (UK). It includes ET features and reading comprehension scores [0-4] for each trial [1-12] - [see more](descriptions/data/mecoL1.md)
@@ -40,22 +31,12 @@ Based on the existing datasets mentioned above, for this project we use:
 - `MECO-en_uk-comp.csv`: MECO-L1 reading comprehension scores [0-4] for each passage/trial [1-12]
 - `webq-nr.csv`: Data from WebQAmGaze - used code from https://github.com/tfnribeiro/WebQAmGaze to get the csv data from the pre_processed_data folder
 
-<<<<<<< HEAD
-## Methods - Visualizations and Explanations
-- plot saccades path for a single participant's trial - MECO L1 - (`visualizations\saccade_plot_meco.py`)
-- plot fixation path for a single participant's trial - MECO L1 - (`visualizations\saccade_plot_meco.py`)
-- (Draft) visualization of LLM-based cluster analysis - open `visualizations\cluster_analysis_example.html`
-- SHAP explanations - global and local explanations based on SHAP values (`explanations\shap_explanations.py`)
-- LLM feedback - communicate model parameters and explanations (`explanations\LLM_explanations.py`)
-=======
 ## Methods
 - plot saccades for a single participant's trial - (`visualizations\saccade_plot_meco.py`)
 - SHAP - global and local explanations (`explanations\shap_explanations.py`)
 - LLM - communicate model parameters and explanations (`explanations\LLM_explanations.py`)
->>>>>>> 708358da67863d5ee905ad942449b248754b4c05
     - provide a descriptive summary of clustering (`explanations\generate_cluster_explanations`)
     - provide global/local explanations based on SHAP explanations 
-
 
 ## Usage and Tasks
 ### Tasks
