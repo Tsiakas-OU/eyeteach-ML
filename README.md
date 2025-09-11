@@ -31,12 +31,12 @@ Based on the existing datasets mentioned above, for this project we use:
 - `MECO-en_uk-comp.csv`: MECO-L1 reading comprehension scores [0-4] for each passage/trial [1-12]
 - `webq-nr.csv`: Data from WebQAmGaze - used code from https://github.com/tfnribeiro/WebQAmGaze to get the csv data from the pre_processed_data folder
 
-## Methods
-- plot saccades for a single participant's trial - (`visualizations\saccade_plot_meco.py`)
-- SHAP - global and local explanations (`explanations\shap_explanations.py`)
-- LLM - communicate model parameters and explanations (`explanations\LLM_explanations.py`)
-    - provide a descriptive summary of clustering (`explanations\generate_cluster_explanations`)
-    - provide global/local explanations based on SHAP explanations 
+## Methods - Visualizations and Explanations
+- plot saccades path for a single participant's trial - MECO L1 - (`visualizations\saccade_plot_meco.py`)
+- plot fixation path for a single participant's trial - MECO L1 - (`visualizations\saccade_plot_meco.py`)
+- (Draft) visualization of LLM-based cluster analysis - open `visualizations\cluster_analysis_example.html`
+- SHAP explanations - global and local explanations based on SHAP values (`explanations\shap_explanations.py`)
+- LLM feedback - communicate model parameters and explanations (`explanations\LLM_explanations.py`)
 
 ## Usage and Tasks
 ### Tasks
