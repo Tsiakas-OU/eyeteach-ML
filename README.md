@@ -15,10 +15,11 @@ development of ML models using eye-tracking data for reading comprehension tasks
 - `classifier_trial_meco.py`: classification of comprehension accuracy - MECO passage level
 - `clustering_trial_meco.py`: clustering of eye-tracking features and comprehension data - MECO passage level
 
-## Data Used
-For the purpose of the EYE-TEACH project, we use existing datasets for eye-tracking.
-- For MECO-L1, we got the data and code from: https://osf.io/3527a/ 
-- For WebQAmGaze, we got the (pre_processed_) data and code from: https://github.com/tfnribeiro/WebQAmGaze
+## Attribution
+For the purpose of the EYE-TEACH project, we sourced existing datasets and codes from:
+- [MECO-L1](https://osf.io/3527a/), licensed under [CC-By Attribution 4.0 International],
+- [WebQAmGaze](https://github.com/tfnribeiro/WebQAmGaze), licensed under [CC-By Attribution 4.0 International],
+- ...
 
 ## Training datasets
 Based on the existing datasets mentioned above, for this project we use: 
@@ -27,7 +28,7 @@ Based on the existing datasets mentioned above, for this project we use:
 - `MECO-en_uk-comp.csv`: MECO-L1 reading comprehension scores [0-4] for each passage/trial [1-12]
 - `webq-nr.csv`: Data from WebQAmGaze - used code from https://github.com/tfnribeiro/WebQAmGaze to get the csv data from the pre_processed_data folder
 
-## Methods ()
+## Methods
 - plot saccades for a single participant's trial - (`visualizations\saccade_plot_meco.py`)
 - SHAP - global and local explanations (`explanations\shap_explanations.py`)
 - LLM - communicate model parameters and explanations (`explanations\LLM_explanations.py`)
@@ -44,4 +45,6 @@ Run `python` +
 - `training\classifier_trial_meco.py` - [MECO] train a classifier to predict the reading comprehension score for a single participant's trials (passage level)
 - `training\clustering_trial_meco.py` - [MECO] identify clusters of trial data (passage level)
 - `visualizations\saccade_plot_meco.py` - [MECO] plot saccades for a participant's trial
- 
+
+## License
+External components are subject to their respective licenses.
