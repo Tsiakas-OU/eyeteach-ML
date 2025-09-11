@@ -16,8 +16,16 @@ development of ML models using eye-tracking data for reading comprehension tasks
 - `clustering_trial_meco.py`: clustering of eye-tracking features and comprehension data - MECO passage level
 
 ## Data Used
+For the purpose of the EYE-TEACH project, we use existing datasets for eye-tracking.
+- For MECO-L1, we got the data and code from: https://osf.io/3527a/ 
+- For WebQAmGaze, we got the (pre_processed_) data and code from: https://github.com/tfnribeiro/WebQAmGaze
+
+## Training datasets
+Based on the existing datasets mentioned above, for this project we use: 
 - `MECO-en_uk-passage.csv`: MECO-L1 passage data for English (UK). It includes ET features and reading comprehension scores [0-4] for each passage/trial [1-12] - [see more](descriptions/data/mecoL1.md)
-- 
+- `MECO-en_uk-fix_uk01.csv`: MECO-L1 fixation report for a single participant
+- `MECO-en_uk-comp.csv`: MECO-L1 reading comprehension scores [0-4] for each passage/trial [1-12]
+- `webq-nr.csv`: Data from WebQAmGaze - used code from https://github.com/tfnribeiro/WebQAmGaze to get the csv data from the pre_processed_data folder
 
 ## Methods ()
 - plot saccades for a single participant's trial - (`visualizations\saccade_plot_meco.py`)
