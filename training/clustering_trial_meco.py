@@ -1,3 +1,6 @@
+import sys
+sys.path.append('..')
+
 import pandas as pd
 from explanations.LLM_explanations import generate_cluster_explanations
 import numpy as np
@@ -7,7 +10,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Load dataset
-df = pd.read_csv('datasets/mecoL1/MECO-en_uk-passage.csv')
+df = pd.read_csv('../datasets/mecoL1/MECO-en_uk-passage.csv')
 print("Dataset shape:", df.shape)
 print("\nFirst few rows:")
 print(df.head())

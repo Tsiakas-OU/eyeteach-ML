@@ -1,17 +1,3 @@
-#from transformers import pipeline
-#import json
-#import torch
-
-"""
-pipe = pipeline(
-    "text-generation",
-    model="HuggingFaceH4/zephyr-7b-beta",
-    torch_dtype=torch.bfloat16,
-    device_map="auto",
-    max_new_tokens=400  
-)
-"""
-
 def generate_cluster_explanations(cluster_profiles):
     """Generate natural language explanations for all clusters with comparative analysis"""
     
@@ -68,24 +54,7 @@ def generate_cluster_explanations(cluster_profiles):
     try:
         # Generate cluster analysis -NOW IT PROVIDES A STATIC RESPONSE - LLM generated
         print(prompt)
-        """ response = pipe(
-            prompt,
-            max_new_tokens=500,
-            temperature=0.2,
-            do_sample=True,
-            top_k=50,
-            top_p=0.95,
-            repetition_penalty=1.1
-        )[0]['generated_text'] 
-        
-        # Extract only the new generated text
-        #cluster_analysis = response.replace(prompt, "").strip()
-        #explanations['clusters'] = cluster_analysis
-        
-        #print("\nCluster analysis:")
-        #print(cluster_analysis)
-        #print("-" * 80)
-        """
+    
         static_reponse = f"Analysis of Three Reader Groups\nWe can see three clear patterns in how students read.\n One group reads at a medium pace but goes back to reread sections quite often. Another group reads very quickly and smoothly, rarely going back over text they have already read. The final group reads very slowly and spends a significant amount of time rereading previous words and sentences. \n Despite these very different approaches to reading, all three groups showed very similar and high levels of understanding on the comprehension questions afterward.\n The main difference between the groups is the speed and effort spent reading, not the final level of understanding they achieved."
         print(static_reponse)
 

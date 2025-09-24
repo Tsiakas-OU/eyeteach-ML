@@ -10,7 +10,7 @@ from sklearn.utils.class_weight import compute_class_weight
 
 
 # Load dataset
-df = pd.read_csv('datasets/mecoL1/MECO-en_uk-passage.csv')
+df = pd.read_csv('../datasets/mecoL1/MECO-en_uk-passage.csv')
 print(df.head())
 
 participants = df['uniform_id'].unique()
