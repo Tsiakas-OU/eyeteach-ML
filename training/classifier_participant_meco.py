@@ -19,7 +19,7 @@ trials = df['trialid'].unique()
 print(f"Total trials: {len(trials)}")
 
 # Define features (X) and target (y)
-features = ['nblink', 'nrun', 'nfix', 'nout', 
+features = ['trial.nwords', 'nblink', 'nrun', 'nfix', 'nout', 
            'sac', 'skip', 'refix', 'reg', 'mfix', 
            'firstpass', 'rereading', 'total', 'rate']
 
@@ -38,33 +38,33 @@ print(df['ACCURACY_CLASS'].value_counts())
 # Initialize lists to store results
 all_predictions = []
 all_true_labels = []
-trial_results = []
+participant_results = []
 feature_importances = []
 
-print("\nStarting Leave-One-Trial-Out Cross-Validation...")
+print("\nStarting Leave-One-Subject-Out Cross-Validation...")
 print("=" * 60)
 
-# Perform Leave-One-Trial-Out Cross-Validation
-for i, test_trial in enumerate(trials):
-    print(f"Fold {i+1}/{len(trials)}: Testing trial {test_trial}")
+# Perform Leave-One-Subject-Out Cross-Validation
+for i, test_participant in enumerate(participants):
+    print(f"Fold {i+1}/{len(participants)}: Testing participant {test_participant}")
     
-    # Split data: all trials except the current one for training
-    train_mask = df['trialid'] != test_trial
-    test_mask = df['trialid'] == test_trial
+    # Split data: all participants except the current one for training
+    train_mask = df['uniform_id'] != test_participant
+    test_mask = df['uniform_id'] == test_participant
     
     X_train = df.loc[train_mask, features]
     y_train = df.loc[train_mask, 'ACCURACY_CLASS']
     X_test = df.loc[test_mask, features]
     y_test = df.loc[test_mask, 'ACCURACY_CLASS']
     
-    # Check if test trial has data
+    # Check if test participant has data
     if len(X_test) == 0:
-        print(f"  No data for trial {test_trial}, skipping...")
+        print(f"  No data for participant {test_participant}, skipping...")
         continue
     
     # Check if we have enough samples for training
     if len(X_train) == 0:
-        print(f"  No training data available for trial {test_trial}, skipping...")
+        print(f"  No training data available for participant {test_participant}, skipping...")
         continue
     
     # Scale features
@@ -95,48 +95,66 @@ for i, test_trial in enumerate(trials):
     all_predictions.extend(y_pred)
     all_true_labels.extend(y_test.values)
     
-    # Calculate accuracy for this trial
-    trial_accuracy = accuracy_score(y_test, y_pred)
+    # Calculate accuracy for this participant
+    participant_accuracy = accuracy_score(y_test, y_pred)
     
     # Store feature importances
     feature_imp = pd.DataFrame({
         'feature': features,
         'importance': model.feature_importances_,
-        'trial': test_trial
+        'participant': test_participant
     })
     feature_importances.append(feature_imp)
     
-    # Store trial-level results
-    trial_results.append({
-        'trial_id': test_trial,
+    # Store participant-level results
+    participant_results.append({
+        'participant_id': test_participant,
         'test_samples': len(X_test),
         'train_samples': len(X_train),
-        'accuracy': trial_accuracy,
+        'accuracy': participant_accuracy,
         'true_labels': y_test.values.tolist(),
         'predictions': y_pred.tolist(),
-        'participants_in_test': df.loc[test_mask, 'uniform_id'].unique().tolist()
+        'trials_in_test': df.loc[test_mask, 'trialid'].unique().tolist()
     })
     
-    print(f"  Train samples: {len(X_train)}, Test samples: {len(X_test)}, Accuracy: {trial_accuracy:.3f}")
+    print(f"  Train samples: {len(X_train)}, Test samples: {len(X_test)}, Accuracy: {participant_accuracy:.3f}")
 
 # Calculate overall performance
 print("\n" + "=" * 60)
-print("OVERALL RESULTS - Leave-One-Trial-Out")
+print("OVERALL RESULTS - Leave-One-Subject-Out")
 print("=" * 60)
 
 overall_accuracy = accuracy_score(all_true_labels, all_predictions)
 print(f"Overall Accuracy: {overall_accuracy:.3f}")
 print(f"Total predictions: {len(all_predictions)}")
-print(f"Number of trials tested: {len(trials)}")
+print(f"Number of participants tested: {len(participants)}")
 
 # Detailed classification report
 print("\nDetailed Classification Report:")
 print(classification_report(all_true_labels, all_predictions))
 
-# Trial-level performance summary
-trial_summary = pd.DataFrame(trial_results)
-print(f"\nTrial-level Performance Summary:")
-print(f"Average accuracy across trials: {trial_summary['accuracy'].mean():.3f}")
-print(f"Standard deviation: {trial_summary['accuracy'].std():.3f}")
-print(f"Best trial accuracy: {trial_summary['accuracy'].max():.3f}")
-print(f"Worst trial accuracy: {trial_summary['accuracy'].min():.3f}")
+# Participant-level performance summary
+participant_summary = pd.DataFrame(participant_results)
+print(f"\nParticipant-level Performance Summary:")
+print(f"Average accuracy across participants: {participant_summary['accuracy'].mean():.3f}")
+print(f"Standard deviation: {participant_summary['accuracy'].std():.3f}")
+print(f"Best participant accuracy: {participant_summary['accuracy'].max():.3f}")
+print(f"Worst participant accuracy: {participant_summary['accuracy'].min():.3f}")
+
+# Feature importance analysis
+if feature_importances:
+    feature_importance_df = pd.concat(feature_importances, ignore_index=True)
+    avg_feature_importance = feature_importance_df.groupby('feature')['importance'].mean().sort_values(ascending=False)
+    
+    print(f"\nAverage Feature Importance:")
+    for feature, importance in avg_feature_importance.items():
+        print(f"  {feature}: {importance:.4f}")
+    
+    # Plot feature importance
+    plt.figure(figsize=(10, 6))
+    avg_feature_importance.plot(kind='bar')
+    plt.title('Average Feature Importance Across All Participants')
+    plt.ylabel('Importance')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
