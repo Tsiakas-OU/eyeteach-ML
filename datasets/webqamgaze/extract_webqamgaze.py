@@ -50,7 +50,7 @@ no_target_error = (data.target_error == False).to_numpy()
 sample_higher_10 = (data.webgazer_sample_rate > 10).to_numpy()
 acc_higher = (data.avg_roi_last_val > 0).to_numpy()
 filter_mturks = np.array([False if "link" in worker_id else True for worker_id in data["worker_id"]])
-filter_sets = np.array([True if set_lang in ["EN", "DE", "ES", "TR"] else False for set_lang in data["set_language"]])
+filter_sets = np.array([True if set_lang in ["EN"] else False for set_lang in data["set_language"]])
 # Set a maximum time to 60 minutes
 # "EN", "DE", "ES", "TR"
 max_time_min = 60
@@ -151,6 +151,7 @@ for i in range(10):
                                     data_to_append))
         else:
             data_to_append = np.hstack(( [
+                                        worker_id,
                                         in_span_mean,
                                         out_span_mean,
                                         relative_TRT,
@@ -165,8 +166,8 @@ for i in range(10):
 data_for_cls_nr = np.array(data_for_cls_nr)
 data_for_cls_is = np.array(data_for_cls_is)
 
-data_for_classifier = np.array(data_for_cls_nr,dtype=float)
+data_for_classifier = np.array(data_for_cls_nr)
 # Convert to DataFrame and save
-columns = ['in_span_mean', 'out_span_mean', 'relative_TRT','Text_TRT','Target_TRT', 'Fix_Target', 'target_to_fixation_ratio', 'Fix_Total', 'Correct_Flag']
+columns = ['id','in_span_mean', 'out_span_mean', 'relative_TRT','Text_TRT','Target_TRT', 'Fix_Target', 'target_to_fixation_ratio', 'Fix_Total', 'Correct_Flag']
 df = pd.DataFrame(data_for_classifier, columns = columns)
 df.to_csv('webq-nr.csv', index=False)
