@@ -12,16 +12,26 @@ from sklearn.utils.class_weight import compute_class_weight
 df = pd.read_csv('../datasets/mecoL1/MECO-en_uk-passage.csv')
 print(df.head())
 
+# Load Flesch scores
+flesch_df = pd.read_csv('../datasets/mecoL1/flesch_scores_eng_MECO_L1.csv')
+print(flesch_df.head())
+flesch_dict = flesch_df.set_index('trialid')['flesch_readability'].to_dict()
+
+# Map flesch_readability to main dataset
+df['flesch_readability'] = df['trialid'].map(flesch_dict)
+print(df.head())
+
 participants = df['uniform_id'].unique()
 print(f"Total participants: {len(participants)}")
 
 trials = df['trialid'].unique()
 print(f"Total trials: {len(trials)}")
 
-# Define features (X) and target (y)
-features = ['nblink', 'nrun', 'nfix', 'nout', 
+print(df['ACCURACY'].value_counts())
+# Define features (X) and target (y) - including flesch_score
+features = ['trial.nwords', 'nblink', 'nrun', 'nfix', 'nout', 
            'sac', 'skip', 'refix', 'reg', 'mfix', 
-           'firstpass', 'rereading', 'total', 'rate']
+           'firstpass', 'rereading', 'total', 'rate', 'flesch_readability']
 
 # Define new classes
 def recode_accuracy(x):

@@ -26,6 +26,7 @@ print(f"Total participants: {len(participants)}")
 trials = df['trialid'].unique()
 print(f"Total trials: {len(trials)}")
 
+print(df['ACCURACY'].value_counts())
 # Define features (X) and target (y) - including flesch_score
 features = ['trial.nwords', 'nblink', 'nrun', 'nfix', 'nout', 
            'sac', 'skip', 'refix', 'reg', 'mfix', 
