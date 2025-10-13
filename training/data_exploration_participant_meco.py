@@ -2,11 +2,14 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy import stats
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 import warnings
 warnings.filterwarnings('ignore')
+plt.style.use('seaborn-v0_8')
+sns.set_palette("husl")
 
 # Load datasets
 df = pd.read_csv('../datasets/mecoL1/MECO-en_uk-passage.csv')
@@ -18,229 +21,264 @@ flesch_dict = flesch_df.set_index('trialid')['flesch_readability'].astype(float)
 df['flesch_readability'] = df['trialid'].map(flesch_dict)
 
 print("Dataset loaded successfully!")
-print(f"Original dataset shape: {df.shape}")
+print(f"Dataset shape: {df.shape}")
 
-# Get unique participants
-participants = df['uniform_id'].unique()
-
-# Define features
-features = ['nblink', 'nrun', 'nfix', 
+features = ['trial.nwords', 'nblink', 'nrun', 'nfix', 'nout', 
            'sac', 'skip', 'refix', 'reg', 'mfix', 
-           'firstpass', 'rereading', 'total', 'rate', 
-           'flesch_readability', 'ACCURACY']
+           'firstpass', 'rereading', 'total', 'rate', 'flesch_readability', 'ACCURACY']
 
-print("\nCREATING PARTICIPANT-LEVEL FEATURES")
-participant_features = []
+# PARTICIPANT-LEVEL AGGREGATION (MEAN VALUES)
+participants = df['uniform_id'].unique()
+print(f"Total participants: {len(participants)}")
+
+# Create participant-level features - MEAN for clustering, STD for analysis
+participant_means = []
+participant_stds = []
+participant_ids = []
+
 for participant in participants:
     participant_data = df[df['uniform_id'] == participant]
-    
-    # Calculate mean and std for each feature across all trials
-    feature_vector = []
+    mean_vector = []
+    std_vector = []
     for feature in features:
-        feature_vector.extend([
-            participant_data[feature].mean(),    # Mean behavior
-            #participant_data[feature].std()      # Variability in behavior
-        ])
+        mean_vector.append(participant_data[feature].mean())
+        std_vector.append(participant_data[feature].std())
     
-    participant_features.append(feature_vector)
+    participant_means.append(mean_vector)
+    participant_stds.append(std_vector)
+    participant_ids.append(participant)
 
-# Convert to DataFrame
-participant_features_df = pd.DataFrame(participant_features, index=participants)
-feature_columns = []
-for feature in features:
-    feature_columns.append(f'{feature}_mean')
-    #feature_columns.append(f'{feature}_std')
-participant_features_df.columns = feature_columns
+participant_means_df = pd.DataFrame(participant_means, index=participant_ids)
+mean_columns = [f'{feature}_mean' for feature in features]
+participant_means_df.columns = mean_columns
 
-print(f"Created participant feature matrix: {participant_features_df.shape}")
+participant_stds_df = pd.DataFrame(participant_stds, index=participant_ids)
+std_columns = [f'{feature}_std' for feature in features]
+participant_stds_df.columns = std_columns
 
-# Check for missing values and remove participants with missing data
-missing_values = participant_features_df.isnull().sum().sum()
-print(f"Total missing values: {missing_values}")
-
-if missing_values > 0:
-    participant_features_df = participant_features_df.dropna()
-    print(f"Participants after removing missing values: {len(participant_features_df)}")
+print(f"Created participant MEAN features: {participant_means_df.shape}")
+print(f"Created participant STD features: {participant_stds_df.shape}")
+participant_means_clean = participant_means_df.dropna()
+print(f"Participants after removing missing values: {len(participant_means_clean)}")
 
 # =============================================================================
+# Create distribution plots for all features
+# Split features into two groups of 8
+features_group1 = mean_columns[:8]   # First 8 features
+features_group2 = mean_columns[8:]   # Last 8 features
 
-print("\n1. BASIC STATISTICS AND CORRELATIONS")
+# Figure 1: First 8 features
+fig1, axes1 = plt.subplots(2, 4, figsize=(20, 10))
+axes1 = axes1.ravel()
 
-# Basic statistics
-print("\nParticipant-level feature statistics:")
-print(participant_features_df.describe())
+for i, feature in enumerate(features_group1):
+    axes1[i].hist(participant_means_clean[feature].dropna(), bins=30, alpha=0.7, color='skyblue', edgecolor='black')
+    axes1[i].set_title(f'Distribution of {feature}', fontsize=12)
+    axes1[i].set_xlabel(feature)
+    axes1[i].set_ylabel('Frequency')
+    axes1[i].grid(True, alpha=0.3)
 
-# Correlation matrix
-correlation_matrix = participant_features_df.corr()
+plt.tight_layout()
+plt.show()
 
-plt.figure(figsize=(20, 18))
-sns.heatmap(correlation_matrix, cmap='coolwarm', center=0, fmt='.2f')
-plt.title('Participant-Level Feature Correlation Matrix')
+# Figure 2: Last 8 features
+fig2, axes2 = plt.subplots(2, 4, figsize=(20, 10))
+axes2 = axes2.ravel()
+
+for i, feature in enumerate(features_group2):
+    axes2[i].hist(participant_means_clean[feature].dropna(), bins=30, alpha=0.7, color='skyblue', edgecolor='black')
+    axes2[i].set_title(f'Distribution of {feature}', fontsize=12)
+    axes2[i].set_xlabel(feature)
+    axes2[i].set_ylabel('Frequency')
+    axes2[i].grid(True, alpha=0.3)
+
 plt.tight_layout()
 plt.show()
 
 # =============================================================================
+# PARTICIPANT-LEVEL STATISTICS
+# =============================================================================
+print("\n" + "="*60)
+print("PARTICIPANT-LEVEL STATISTICS")
+print("="*60)
 
-# Scale features
+# Statistics for MEAN features
+print("Participant-level MEAN feature statistics:")
+print(participant_means_clean.describe())
+
+# Analysis with STD features
+print("\nParticipant-level STD feature statistics (variability analysis):")
+print(participant_stds_df.describe())
+
+# Check participant consistency using STD features
+consistency_scores = participant_stds_df.mean(axis=1)
+print(f"\nParticipant consistency (average std across features):")
+print(f"Most consistent participant: {consistency_scores.idxmin()} ({consistency_scores.min():.3f})")
+print(f"Least consistent participant: {consistency_scores.idxmax()} ({consistency_scores.max():.3f})")
+
+# Visualize consistency distribution
+plt.figure(figsize=(10, 6))
+plt.hist(consistency_scores, bins=15, alpha=0.7, color='skyblue', edgecolor='black')
+plt.axvline(consistency_scores.mean(), color='red', linestyle='--', 
+            label=f'Mean: {consistency_scores.mean():.3f}')
+plt.xlabel('Average Standard Deviation (Consistency Score)')
+plt.ylabel('Number of Participants')
+plt.title('Distribution of Participant Consistency Scores')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+# Correlation matrix for participant-level MEAN features
+correlation_matrix_means = participant_means_clean.corr()
+
+plt.figure(figsize=(16, 14))
+mask = np.triu(np.ones_like(correlation_matrix_means, dtype=bool))
+sns.heatmap(correlation_matrix_means, mask=mask, annot=True, cmap='coolwarm', 
+            center=0, square=True, fmt='.2f', cbar_kws={"shrink": .8},
+            annot_kws={'size': 8})
+plt.title('Participant-Level Feature Correlation Matrix', fontsize=16, pad=20)
+plt.tight_layout()
+plt.show()
+
+
+# PARTICIPANT-LEVEL PCA AND CLUSTERING
+# Scale MEAN features for clustering
 scaler = StandardScaler()
-participant_features_scaled = scaler.fit_transform(participant_features_df)
+participant_means_scaled = scaler.fit_transform(participant_means_clean)
 
-# Perform K-means clustering
-nclusters = 3
-kmeans = KMeans(n_clusters=nclusters, random_state=42, n_init=10)
-cluster_labels = kmeans.fit_predict(participant_features_scaled)
+# Perform PCA on participant MEAN data
+pca_participant = PCA()
+participant_pca = pca_participant.fit_transform(participant_means_scaled)
 
-# Add cluster labels to participant features DataFrame
-participant_features_df['cluster'] = cluster_labels
+# Explained variance
+explained_variance_participant = pca_participant.explained_variance_ratio_
+print(f"Explained variance by first 5 components:")
+for i in range(5):
+    print(f"  PC{i+1}: {explained_variance_participant[i]:.3f} ({explained_variance_participant[i]*100:.1f}%)")
 
-print("\nCluster distribution:")
-print(participant_features_df['cluster'].value_counts().sort_index())
+# Show feature contributions to principal components
+components = pca_participant.components_
+print("\nTop MEAN features contributing to PC1:")
+pc1_contributions = pd.Series(components[0], index=mean_columns).abs().sort_values(ascending=False)
+for feature, loading in pc1_contributions.head(5).items():
+    print(f"  {feature}: {loading:.3f}")
 
-# =============================================================================
-# Apply PCA
-pca = PCA()
-participant_features_pca = pca.fit_transform(participant_features_scaled)
+print("\nTop MEAN features contributing to PC2:")
+pc2_contributions = pd.Series(components[1], index=mean_columns).abs().sort_values(ascending=False)
+for feature, loading in pc2_contributions.head(5).items():
+    print(f"  {feature}: {loading:.3f}")
 
-# Calculate explained variance
-explained_variance = pca.explained_variance_ratio_
-cumulative_variance = np.cumsum(explained_variance)
+# Apply K-means clustering on participant PCA data
+n_clusters = 2
+kmeans_participant = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+participant_cluster_labels = kmeans_participant.fit_predict(participant_means_scaled)  # Use scaled data!
 
-print("PCA Explained Variance Ratio (first 5 components):")
-for i, (var, cum_var) in enumerate(zip(explained_variance[:5], cumulative_variance[:5])):
-    print(f"PC{i+1}: {var:.3f} ({cum_var:.3f} cumulative)")
+print(f"\nParticipant cluster distribution:")
+unique, counts = np.unique(participant_cluster_labels, return_counts=True)
+for cluster, count in zip(unique, counts):
+    percentage = (count / len(participant_cluster_labels)) * 100
+    print(f"  Cluster {cluster}: {count} participants ({percentage:.1f}%)")
 
-# Plot explained variance
-plt.figure(figsize=(12, 5))
-plt.bar(range(1, len(explained_variance[:10]) + 1), explained_variance[:10], alpha=0.7)
-plt.xlabel('Principal Component')
-plt.ylabel('Explained Variance Ratio')
-plt.title('Individual Explained Variance')
-plt.grid(True, alpha=0.3)
+# Add cluster labels to the dataframe
+participant_means_clean = participant_means_clean.copy()
+participant_means_clean['cluster'] = participant_cluster_labels
 
-plt.tight_layout()
-plt.show()
-
-# Visualize clusters using PCA
-plt.figure(figsize=(12, 8))
-scatter = plt.scatter(participant_features_pca[:, 0], participant_features_pca[:, 1], 
-                     c=cluster_labels, cmap='viridis', alpha=0.7, s=60)
+plt.figure(figsize=(10, 8))
+scatter = plt.scatter(participant_pca[:, 0], participant_pca[:, 1], 
+                     c=participant_cluster_labels, cmap='viridis', alpha=0.7, s=60)
+plt.xlabel(f'PC1 ({explained_variance_participant[0]:.2%} variance)')
+plt.ylabel(f'PC2 ({explained_variance_participant[1]:.2%} variance)')
+plt.title('Participant Clustering (Mean Features)')
 plt.colorbar(scatter, label='Cluster')
-plt.xlabel(f'PC1 ({pca.explained_variance_ratio_[0]:.2%} variance)')
-plt.ylabel(f'PC2 ({pca.explained_variance_ratio_[1]:.2%} variance)')
-plt.title('Participant Clusters (PCA Visualization)')
 plt.grid(True, alpha=0.3)
 
-# Add cluster centers in PCA space
-centers_pca = pca.transform(kmeans.cluster_centers_)
+# Add cluster centers
+centers_pca = pca_participant.transform(kmeans_participant.cluster_centers_)
 plt.scatter(centers_pca[:, 0], centers_pca[:, 1], c='red', marker='X', s=200, 
            label='Cluster Centers', edgecolors='black')
 plt.legend()
 plt.tight_layout()
 plt.show()
 
-# =============================================================================
-print("\nFEATURE - PCA COMPONENT RELATIONSHIPS")
+# Analyze mean values for each cluster
+cluster_means = participant_means_clean.groupby('cluster').mean()
 
-# Get PCA component weights (loadings)
-components = pca.components_
+print("\nCluster characteristics (mean values for features):")
+print(cluster_means[mean_columns].round(3))
 
-# Create loadings DataFrame
-loadings_df = pd.DataFrame(components.T, 
-                          columns=[f'PC{i+1}' for i in range(len(feature_columns))],
-                          index=feature_columns)
+# Visualize cluster differences for top features
+# Get top 6 most differentiating features using ANOVA
+from sklearn.feature_selection import f_classif
 
-print("Top features for PC1 and PC2:")
+f_values, p_values = f_classif(participant_means_scaled, participant_cluster_labels)
+feature_anova = pd.DataFrame({'feature': mean_columns, 'f_value': f_values, 'p_value': p_values})
+top_features = feature_anova.nlargest(6, 'f_value')['feature'].tolist()
 
-# PC1 top features
-pc1_loadings = loadings_df['PC1'].abs().sort_values(ascending=False).head(10)
-print("\nTop 10 features for PC1:")
-for feature, loading in pc1_loadings.items():
-    print(f"  {feature}: {loadings_df.loc[feature, 'PC1']:.3f}")
+# Create subplots for top features
+fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+axes = axes.ravel()
 
-# PC2 top features
-pc2_loadings = loadings_df['PC2'].abs().sort_values(ascending=False).head(10)
-print("\nTop 10 features for PC2:")
-for feature, loading in pc2_loadings.items():
-    print(f"  {feature}: {loadings_df.loc[feature, 'PC2']:.3f}")
+for i, feature in enumerate(top_features):
+    # Create boxplot for each feature by cluster
+    cluster_data = []
+    for cluster in range(n_clusters):
+        cluster_data.append(participant_means_clean[participant_means_clean['cluster'] == cluster][feature])
+    
+    boxplot = axes[i].boxplot(cluster_data, labels=[f'Cluster {c}' for c in range(n_clusters)], 
+                             patch_artist=True)
+    
+    # Color the boxes
+    colors = ['lightblue', 'lightcoral']
+    for patch, color in zip(boxplot['boxes'], colors):
+        patch.set_facecolor(color)
+    
+    axes[i].set_title(f'{feature}\n(F-value: {f_values[mean_columns.index(feature)]:.1f})')
+    axes[i].set_ylabel('Value')
+    axes[i].grid(True, alpha=0.3)
 
-# Visualize feature contributions to first two components
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
-
-# PC1 feature contributions
-pc1_top_features = pc1_loadings.index[:8]
-pc1_values = [loadings_df.loc[feature, 'PC1'] for feature in pc1_top_features]
-ax1.barh(pc1_top_features, pc1_values)
-ax1.set_xlabel('Loading Value')
-ax1.set_title('Top Features Contributing to PC1')
-ax1.grid(True, alpha=0.3)
-
-# PC2 feature contributions
-pc2_top_features = pc2_loadings.index[:8]
-pc2_values = [loadings_df.loc[feature, 'PC2'] for feature in pc2_top_features]
-ax2.barh(pc2_top_features, pc2_values)
-ax2.set_xlabel('Loading Value')
-ax2.set_title('Top Features Contributing to PC2')
-ax2.grid(True, alpha=0.3)
-
+plt.suptitle('Top Differentiating Features Between Clusters', fontsize=16)
 plt.tight_layout()
 plt.show()
 
-# =============================================================================
+# Add cluster labels to STD dataframe for consistency analysis
+participant_stds_clean = participant_stds_df.loc[participant_means_clean.index]
+participant_stds_clean['cluster'] = participant_cluster_labels
 
-print("\nCLUSTER CHARACTERISTICS")
+# Analyze consistency by cluster
+cluster_consistency = participant_stds_clean.groupby('cluster').mean().mean(axis=1)
+print("Average consistency (std) by cluster:")
+for cluster, consistency in cluster_consistency.items():
+    print(f"  Cluster {cluster}: {consistency:.3f}")
 
-# Analyze cluster characteristics
-cluster_characteristics = participant_features_df.groupby('cluster').mean()
-print("\nCluster characteristics (mean values for top 10 most variable features):")
+# Calculate correlation between features and cluster assignments
+feature_correlations = {}
+for feature in mean_columns:
+    correlation = np.corrcoef(participant_means_clean['cluster'], participant_means_clean[feature])[0, 1]
+    feature_correlations[feature] = abs(correlation)
+# Sort features by correlation strength
+sorted_features = sorted(feature_correlations.items(), key=lambda x: x[1], reverse=True)
 
-# Find features with highest variation across clusters
-feature_variation = cluster_characteristics.std() / cluster_characteristics.mean()
-top_variable_features = feature_variation.sort_values(ascending=False).head(10).index
-
-print(cluster_characteristics[top_variable_features].round(3))
-
-# Visualize cluster characteristics
-plt.figure(figsize=(14, 8))
-cluster_means_standardized = (cluster_characteristics - cluster_characteristics.mean()) / cluster_characteristics.std()
-sns.heatmap(cluster_means_standardized[top_variable_features].T, annot=True, 
-            cmap='coolwarm', center=0, fmt='.2f')
-plt.title('Standardized Feature Means by Cluster\n(Top 10 Most Variable Features)')
-plt.tight_layout()
-plt.show()
-
-# =============================================================================
-print("\nPARTICIPANT PROFILES ANALYSIS")
-
-# Analyze what distinguishes each cluster
-print("\nKey differences between clusters:")
-
-for cluster in range(nclusters):
-    cluster_data = participant_features_df[participant_features_df['cluster'] == cluster]
-    print(f"\nCluster {cluster} (n={len(cluster_data)}):")
-    
-    # Get top 5 features that characterize this cluster
-    cluster_mean = cluster_data.mean()
-    overall_mean = participant_features_df.mean()
-    
-    # Find features where this cluster differs most from overall mean
-    differences = (cluster_mean - overall_mean).abs().sort_values(ascending=False)
-    top_differences = differences.head(5)
-    
-    for feature, diff in top_differences.items():
-        if feature != 'cluster':
-            cluster_val = cluster_mean[feature]
-            overall_val = overall_mean[feature]
-            print(f"  {feature}: {cluster_val:.3f} (overall: {overall_val:.3f})")
+print("Features most correlated with cluster assignments:")
+for feature, corr in sorted_features[:5]:
+    print(f"  {feature}: {corr:.3f}")
 
 # =============================================================================
+# FEATURE IMPORTANCE ANALYSIS - IMPROVED
+# =============================================================================
+print("\n" + "="*60)
+print("FEATURE IMPORTANCE ANALYSIS (ANOVA F-values)")
+print("="*60)
 
-print("\nCluster sizes:")
+# Calculate F-values (variance between clusters / variance within clusters)
+f_values, p_values = f_classif(participant_means_scaled, participant_cluster_labels)
 
-for cluster in range(nclusters):
-    cluster_data = participant_features_df[participant_features_df['cluster'] == cluster]
-    n_participants = len(cluster_data)
-    percentage = (n_participants / len(participant_features_df)) * 100
-    cluster_participants = cluster_data.index.tolist()
-    
-    print(f"\nCluster {cluster}: {n_participants} participants ({percentage:.1f}%)")
-    print(f"Participants: {', '.join(cluster_participants)}")
+feature_importance = pd.DataFrame({
+    'feature': mean_columns,
+    'f_value': f_values,
+    'p_value': p_values,
+    'significant': p_values < 0.05
+}).sort_values('f_value', ascending=False)
+
+print("Feature importance for cluster differentiation:")
+print(feature_importance.head(10).round(4))
