@@ -51,8 +51,10 @@ sample_higher_10 = (data.webgazer_sample_rate > 10).to_numpy()
 acc_higher = (data.avg_roi_last_val > 0).to_numpy()
 filter_mturks = np.array([False if "link" in worker_id else True for worker_id in data["worker_id"]])
 filter_sets = np.array([True if set_lang in ["EN"] else False for set_lang in data["set_language"]])
+# Filter for MECO texts only - keep instances where set_trials contains "meco_" texts
+filter_meco_texts = np.array([any("meco_" in trial for trial in set_trials) for set_trials in data["set_trials"]])
+filter_worker_lang = np.array([True if worker_lang in ["EN", "en", "English"] else False for worker_lang in data["worker_lang"]])
 # Set a maximum time to 60 minutes
-# "EN", "DE", "ES", "TR"
 max_time_min = 60
 filter_max_time = (data.exp_total_time < max_time_min/0.000016666).to_numpy()
 
@@ -61,15 +63,18 @@ screen_y_above_720 = (data.screen_y > 615).to_numpy() # Some Tolerance
 screen_above_1280_720 = screen_x_above_1280 & screen_y_above_720
 
 dict_filter = {
-    #"filter_mturks" : filter_mturks,
+    "filter_mturks" : filter_mturks,
     "filter_sets" : filter_sets,
-    #"Approved":approved_only,
+    "filter_meco_texts": filter_meco_texts, 
+    "filter_worker_lang": filter_worker_lang,
+    "Approved": approved_only,
     "Sample Rate": sample_higher_10,
     "Fix_Error, Target_Error": no_fixation_error & no_target_error,
     "screen_above_1280_720": screen_above_1280_720,
     "acc_thresh": acc_higher,
     f"Maximum time ({max_time_min} min)":filter_max_time
 }
+
 n_total = len(data)
 current_filter = np.ones(len(data),dtype=bool)
 for condition, f in dict_filter.items():
@@ -87,16 +92,12 @@ data_filtered = data[mask].copy()
 print("Before: ", data.shape, " After: ", data_filtered.shape)
 
 print(data_filtered[data_filtered.set_language=="EN"].worker_lang.value_counts())
-print(data_filtered[data_filtered.set_language=="DE"].worker_lang.value_counts())
-print(data_filtered[data_filtered.set_language=="ES"].worker_lang.value_counts())
 
 # Load the text settings:
 text_settings_all_settings = pd.read_csv("text_token_stats.csv", index_col=0)
-print(data_filtered["question_0_name"])
 
-USE_TEXT_FEATURES = False
-# TASK_NAME = "nr"
 # Get a vector of Text_TRT, Target_TRT, Fix_Target, Fix_Total, Correct_Flag
+USE_TEXT_FEATURES = False
 data_for_cls_nr = []
 data_for_cls_is = []
 rows_dropped = 0
@@ -137,11 +138,11 @@ for i in range(10):
                 f"trial_{i}_fixation_on_target", 
                 f"question_{i}_target_to_fixation_ratio",
                 f"trial_{i}_fixation_total",
-                #f"trial_{i}_time",
                 f"question_{i}_correct_flag"]].to_numpy()
         relative_TRT = row[f"trial_{i}_fixation_target_TRT"] / row[f"trial_{i}_fixation_text_TRT"]
         if USE_TEXT_FEATURES:
             data_to_append = np.hstack(( [
+                                    worker_id,
                                     in_span_mean,
                                     out_span_mean,
                                     relative_TRT,
@@ -168,6 +169,12 @@ data_for_cls_is = np.array(data_for_cls_is)
 
 data_for_classifier = np.array(data_for_cls_nr)
 # Convert to DataFrame and save
-columns = ['id','in_span_mean', 'out_span_mean', 'relative_TRT','Text_TRT','Target_TRT', 'Fix_Target', 'target_to_fixation_ratio', 'Fix_Total', 'Correct_Flag']
+if USE_TEXT_FEATURES:
+    columns = ['id','in_span_mean', 'out_span_mean', 'relative_TRT', 'token_count','token_avg_length','Text_TRT','Target_TRT', 'Fix_Target', 'target_to_fixation_ratio', 'Fix_Total', 'Correct_Flag']
+    filename = 'webq_meco_EN_nr_wtext-feats.csv'
+else:
+    columns = ['id','in_span_mean', 'out_span_mean', 'relative_TRT','Text_TRT','Target_TRT', 'Fix_Target', 'target_to_fixation_ratio', 'Fix_Total', 'Correct_Flag']
+    filename = 'webq_meco_EN_nr-feats.csv' 
+
 df = pd.DataFrame(data_for_classifier, columns = columns)
-df.to_csv('webq-nr.csv', index=False)
+df.to_csv(filename, index=False)
