@@ -90,7 +90,7 @@ DATA_TO_EXTRACT = 2  # Change this as needed
 data_for_cls_nr = []
 data_for_cls_is = []
 rows_dropped = 0
-for i in range(10):
+for i in [0]: #range(10):
     for row_i, row in data_filtered.iterrows():
         # Remove rows where there is no fixation on text
         if row[f"trial_{i}_fixation_text_TRT"] == 0:
@@ -103,6 +103,9 @@ for i in range(10):
         worker_id = row["worker_id"]
         trial_name = row[f"trial_{i}_name"]
         target = row[f"question_{i}_name"]
+        response = row[f"question_{i}_correct_flag"]
+
+        print(f"Extracting {trial_name} with question {target} and response {response}")
         
         if DATA_TO_EXTRACT in [0, 1]:
             # Existing feature extraction logic
@@ -158,12 +161,15 @@ for i in range(10):
         elif DATA_TO_EXTRACT == 2:  # Webgazer fixation data
             # Extract webgazer filtered data for this trial
             webgazer_data = row["webgazer_filtered_data"]
+            webgazer_all_data = json.loads(row["webgazer_filtered_data"])
+            # Get fixation data for this specific trial
+            trial_fixation_data = webgazer_all_data.get(trial_name, [])
             # Create simple array with id, trial info, and correctness
             data_to_append = np.array([
                 worker_id,
                 trial_name,
                 row[f"question_{i}_correct_flag"],
-                webgazer_data  # This contains the JSON string with fixation points
+                json.dumps(trial_fixation_data)  # This contains the JSON string with fixation points for trial
             ])
         
         # Trials < 5 are Normal Reading
